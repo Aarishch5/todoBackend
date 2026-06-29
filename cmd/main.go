@@ -3,9 +3,14 @@ package main
 import (
 	"ToDo/database/migrations"
 	middleware "ToDo/middlewares"
+	"context"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"ToDo/handlers"
 
@@ -44,10 +49,30 @@ func main() {
 		protected.Delete("/user", handlers.DeleteUser)
 	})
 
-	fmt.Println("Server listening on :8080")
-
-	err = http.ListenAndServe(":8080", router)
-	if err != nil {
-		log.Fatal(err)
+	myServer := &http.Server{
+		Addr:    ":8080",
+		Handler: router,
 	}
+
+	// Running the server in the background so it doesn't block.
+	go func() {
+		fmt.Println("Server Listening at 8080")
+		if err := myServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal("server error:", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	log.Println("Shutting down server...")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := myServer.Shutdown(ctx); err != nil {
+		log.Fatalf("forced shutdown: %v", err)
+	}
+
+	log.Println("Server exited cleanly")
 }
