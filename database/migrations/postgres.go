@@ -10,7 +10,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-//go:embed 001_init.sql
+//go:embed 001_init.up.sql
 var migrationFile embed.FS
 
 var DB *sqlx.DB
@@ -37,7 +37,7 @@ func OpenConnection() error {
 }
 
 func runMigrations() error {
-	sqlBytes, err := migrationFile.ReadFile("001_init.sql")
+	sqlBytes, err := migrationFile.ReadFile("001_init.up.sql")
 	if err != nil {
 		return err
 	}

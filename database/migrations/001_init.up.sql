@@ -1,3 +1,5 @@
+BEGIN;
+
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE IF NOT EXISTS users (
@@ -6,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
+);
 
 CREATE TABLE IF NOT EXISTS todo (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -14,10 +16,9 @@ CREATE TABLE IF NOT EXISTS todo (
     t_name TEXT NOT NULL,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_user
     FOREIGN KEY (user_id) REFERENCES users(user_id)
     ON DELETE CASCADE
-    );
+);
 
 
 CREATE TABLE IF NOT EXISTS user_session (
@@ -26,4 +27,6 @@ CREATE TABLE IF NOT EXISTS user_session (
     session_token TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL
-    );
+);
+
+COMMIT;
