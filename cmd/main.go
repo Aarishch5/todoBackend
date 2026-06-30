@@ -31,8 +31,6 @@ func main() {
 
 	router := chi.NewRouter()
 
-	//router.Get("/", handlers.HomeRoute)
-
 	// Public Routes
 	router.Post("/register", handlers.Register)
 	router.Post("/login", handlers.Login)
@@ -72,8 +70,8 @@ func main() {
 	defer cancel()
 
 	if err := myServer.Shutdown(ctx); err != nil {
-		log.Fatalf("forced shutdown: %v", err)
+		log.Fatalf("forcefully shutdown: %v", err)
 	}
 
-	log.Println("Server exited cleanly")
+	log.Println("Server exited")
 }

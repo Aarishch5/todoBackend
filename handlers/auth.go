@@ -6,6 +6,7 @@ import (
 	"ToDo/utils"
 	"encoding/json"
 	"net/http"
+	"time"
 )
 
 func Register(w http.ResponseWriter, r *http.Request) {
@@ -45,6 +46,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	session := models.Session{
 		UserID:       user.UserID,
 		SessionToken: sessionToken,
+		ExpiresAt:    time.Now().Add(24 * time.Hour),
 	}
 
 	if err := dbHelper.CreateSession(&session); err != nil {
