@@ -6,6 +6,7 @@ import (
 	"ToDo/utils"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -14,6 +15,24 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	var req models.RegisterRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Validating the name, if the name is an empty string
+	if strings.TrimSpace(req.Name) == "" {
+		http.Error(w, "name is required", http.StatusBadRequest)
+		return
+	}
+
+	// validating the email
+	if err := utils.ValidateEmail(req.Email); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// validating password
+	if err := utils.ValidatePassword(req.Password); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

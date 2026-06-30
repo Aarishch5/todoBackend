@@ -19,7 +19,7 @@ func CreateTodo(todo *models.Todo) error {
 	).Scan(&todo.ID)
 }
 
-func GetTodo(id uuid.UUID, userID uuid.UUID) (models.Todo, error) {
+func GetTodoById(id uuid.UUID, userID uuid.UUID) (models.Todo, error) {
 	var todo models.Todo
 
 	err := migrations.DB.Get(
@@ -31,7 +31,7 @@ func GetTodo(id uuid.UUID, userID uuid.UUID) (models.Todo, error) {
 	return todo, err
 }
 
-func GetTodos(userID uuid.UUID) ([]models.Todo, error) {
+func GetAllTodos(userID uuid.UUID) ([]models.Todo, error) {
 	var todos []models.Todo
 
 	err := migrations.DB.Select(
@@ -43,7 +43,7 @@ func GetTodos(userID uuid.UUID) ([]models.Todo, error) {
 	return todos, err
 }
 
-func DeleteTodo(id uuid.UUID, userID uuid.UUID) (int64, error) {
+func DeleteTodoById(id uuid.UUID, userID uuid.UUID) (int64, error) {
 
 	result, err := migrations.DB.Exec(
 		`DELETE FROM todo WHERE id=$1 AND user_id=$2`,
@@ -57,7 +57,7 @@ func DeleteTodo(id uuid.UUID, userID uuid.UUID) (int64, error) {
 	return result.RowsAffected()
 }
 
-func UpdateTodo(id uuid.UUID, userID uuid.UUID, todo *models.Todo) (int64, error) {
+func UpdateTodoById(id uuid.UUID, userID uuid.UUID, todo *models.Todo) (int64, error) {
 
 	result, err := migrations.DB.Exec(
 		`UPDATE todo SET t_name=$1, description=$2 WHERE id=$3 AND user_id=$4`,

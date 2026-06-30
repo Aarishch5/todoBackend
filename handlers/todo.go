@@ -44,7 +44,7 @@ func CreateTodo(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(todo)
 }
 
-func GetTodo(w http.ResponseWriter, r *http.Request) {
+func GetTodoById(w http.ResponseWriter, r *http.Request) {
 
 	userID, ok := middleware.GetUserID(r)
 	if !ok {
@@ -58,7 +58,7 @@ func GetTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	todo, err := dbHelper.GetTodo(id, userID)
+	todo, err := dbHelper.GetTodoById(id, userID)
 	if err != nil {
 		http.Error(w, "todo not found", http.StatusNotFound)
 		return
@@ -68,7 +68,7 @@ func GetTodo(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(todo)
 }
 
-func GetTodos(w http.ResponseWriter, r *http.Request) {
+func GetAllTodos(w http.ResponseWriter, r *http.Request) {
 
 	userID, ok := middleware.GetUserID(r)
 	if !ok {
@@ -76,7 +76,7 @@ func GetTodos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	todos, err := dbHelper.GetTodos(userID)
+	todos, err := dbHelper.GetAllTodos(userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -86,7 +86,7 @@ func GetTodos(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(todos)
 }
 
-func DeleteTodo(w http.ResponseWriter, r *http.Request) {
+func DeleteTodoById(w http.ResponseWriter, r *http.Request) {
 
 	userID, ok := middleware.GetUserID(r)
 	if !ok {
@@ -100,7 +100,7 @@ func DeleteTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := dbHelper.DeleteTodo(id, userID)
+	rows, err := dbHelper.DeleteTodoById(id, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -114,7 +114,7 @@ func DeleteTodo(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func UpdateTodo(w http.ResponseWriter, r *http.Request) {
+func UpdateTodoById(w http.ResponseWriter, r *http.Request) {
 
 	userID, ok := middleware.GetUserID(r)
 	if !ok {
@@ -140,7 +140,7 @@ func UpdateTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := dbHelper.UpdateTodo(id, userID, &todo)
+	rows, err := dbHelper.UpdateTodoById(id, userID, &todo)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
