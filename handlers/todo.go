@@ -11,10 +11,6 @@ import (
 	"github.com/google/uuid"
 )
 
-func HomeRoute(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello World!"))
-}
-
 func CreateTodo(w http.ResponseWriter, r *http.Request) {
 
 	userID, ok := middleware.GetUserID(r)

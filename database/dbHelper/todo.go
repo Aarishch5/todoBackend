@@ -15,10 +15,7 @@ func CreateTodo(todo *models.Todo) error {
 	`
 
 	return migrations.DB.QueryRow(
-		query,
-		todo.UserID,
-		todo.Name,
-		todo.Description,
+		query, todo.UserID, todo.Name, todo.Description,
 	).Scan(&todo.ID)
 }
 
@@ -28,8 +25,7 @@ func GetTodo(id uuid.UUID, userID uuid.UUID) (models.Todo, error) {
 	err := migrations.DB.Get(
 		&todo,
 		`SELECT id, user_id, t_name, description FROM todo WHERE id=$1 AND user_id=$2`,
-		id,
-		userID,
+		id, userID,
 	)
 
 	return todo, err
@@ -51,8 +47,7 @@ func DeleteTodo(id uuid.UUID, userID uuid.UUID) (int64, error) {
 
 	result, err := migrations.DB.Exec(
 		`DELETE FROM todo WHERE id=$1 AND user_id=$2`,
-		id,
-		userID,
+		id, userID,
 	)
 
 	if err != nil {
@@ -65,14 +60,8 @@ func DeleteTodo(id uuid.UUID, userID uuid.UUID) (int64, error) {
 func UpdateTodo(id uuid.UUID, userID uuid.UUID, todo *models.Todo) (int64, error) {
 
 	result, err := migrations.DB.Exec(
-		`UPDATE todo
-				SET t_name=$1,
-		    	description=$2
-				WHERE id=$3 AND user_id=$4`,
-		todo.Name,
-		todo.Description,
-		id,
-		userID,
+		`UPDATE todo SET t_name=$1, description=$2 WHERE id=$3 AND user_id=$4`,
+		todo.Name, todo.Description, id, userID,
 	)
 
 	if err != nil {

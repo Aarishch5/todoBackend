@@ -31,7 +31,7 @@ func main() {
 
 	router := chi.NewRouter()
 
-	router.Get("/", handlers.HomeRoute)
+	//router.Get("/", handlers.HomeRoute)
 
 	// Public Routes
 	router.Post("/register", handlers.Register)
@@ -54,7 +54,7 @@ func main() {
 		Handler: router,
 	}
 
-	// Running the server in the background so it doesn't block.
+	// Running the server in the background
 	go func() {
 		fmt.Println("Server Listening at 8080")
 		if err := myServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
