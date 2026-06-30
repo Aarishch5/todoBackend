@@ -1,17 +1,16 @@
 package migrations
 
 import (
-	"embed"
 	"errors"
 	"os"
 	"time"
 
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
-
-//go:embed 001_init.up.sql
-var migrationFile embed.FS
 
 var DB *sqlx.DB
 
@@ -33,15 +32,28 @@ func OpenConnection() error {
 	DB.SetMaxIdleConns(25)
 	DB.SetConnMaxIdleTime(5 * time.Minute)
 
-	return runMigrations()
+	return migrateUp(DB)
 }
 
-func runMigrations() error {
-	sqlBytes, err := migrationFile.ReadFile("001_init.up.sql")
+func migrateUp(db *sqlx.DB) error {
+	driver, err := postgres.WithInstance(db.DB, &postgres.Config{})
 	if err != nil {
 		return err
 	}
 
-	_, err = DB.Exec(string(sqlBytes))
-	return err
+	m, err := migrate.NewWithDatabaseInstance(
+		"file://database/migrations",
+		"postgres",
+		driver,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return err
+	}
+
+	return nil
 }
