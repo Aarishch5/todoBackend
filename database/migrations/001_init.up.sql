@@ -29,4 +29,5 @@ CREATE TABLE IF NOT EXISTS user_session (
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
+
 COMMIT;
