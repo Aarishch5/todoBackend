@@ -35,7 +35,25 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := utils.GenerateJWTToken(user.UserID)
+	// creating a new session row in db
+	sessionToken, err := utils.GenerateSessionToken()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	session := models.Session{
+		UserID:       user.UserID,
+		SessionToken: sessionToken,
+	}
+
+	if err := dbHelper.CreateSession(&session); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	//passing the sessionToken into the jwt
+	token, err := utils.GenerateJWTToken(user.UserID, sessionToken)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -73,7 +91,24 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := utils.GenerateJWTToken(user.UserID)
+	// creating a session row
+	sessionToken, err := utils.GenerateSessionToken()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	session := models.Session{
+		UserID:       user.UserID,
+		SessionToken: sessionToken,
+	}
+	if err := dbHelper.CreateSession(&session); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// passing sessionToken into the JWT
+	token, err := utils.GenerateJWTToken(user.UserID, sessionToken)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

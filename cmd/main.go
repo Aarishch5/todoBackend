@@ -47,6 +47,7 @@ func main() {
 		protected.Put("/todo/{id}", handlers.UpdateTodo)
 		protected.Delete("/todo/{id}", handlers.DeleteTodo)
 		protected.Delete("/user", handlers.DeleteUser)
+		protected.Post("/logout", handlers.Logout)
 	})
 
 	myServer := &http.Server{

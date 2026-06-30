@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"os"
 	"sync"
 	"time"
@@ -27,14 +29,16 @@ func getSecretKey() []byte {
 }
 
 type Claims struct {
-	UserID string `json:"user_id"`
+	UserID       string `json:"user_id"`
+	SessionToken string `json:"session_token"`
 	jwt.RegisteredClaims
 }
 
-func GenerateJWTToken(userID uuid.UUID) (string, error) {
+func GenerateJWTToken(userID uuid.UUID, sessionToken string) (string, error) {
 
 	claims := Claims{
-		UserID: userID.String(),
+		UserID:       userID.String(),
+		SessionToken: sessionToken,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(
 				time.Now().Add(24 * time.Hour),
@@ -72,4 +76,12 @@ func ValidateJWT(tokenString string) (*Claims, error) {
 	}
 
 	return claims, nil
+}
+
+func GenerateSessionToken() (string, error) {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
 }

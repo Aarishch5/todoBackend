@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"ToDo/database/dbHelper"
 	"context"
 	"net/http"
 	"strings"
@@ -12,7 +13,15 @@ import (
 
 type ContextKey string
 
-const UserContextKey ContextKey = "user"
+const (
+	UserContextKey    ContextKey = "user"
+	SessionContextKey ContextKey = "session"
+)
+
+func GetSessionToken(r *http.Request) (string, bool) {
+	token, ok := r.Context().Value(SessionContextKey).(string)
+	return token, ok
+}
 
 func GetUserID(r *http.Request) (uuid.UUID, bool) {
 	userID, ok := r.Context().Value(UserContextKey).(uuid.UUID)
@@ -50,11 +59,20 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(
-			r.Context(),
-			UserContextKey,
-			userID,
-		)
+		// to confirm that the session still exists in the DB
+		session, err := dbHelper.GetSessionByToken(claims.SessionToken)
+		if err != nil {
+			http.Error(w, "session revoked", http.StatusUnauthorized)
+			return
+		}
+
+		if session.UserID != userID {
+			http.Error(w, "session mismatch", http.StatusUnauthorized)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), UserContextKey, userID)
+		ctx = context.WithValue(ctx, SessionContextKey, claims.SessionToken)
 
 		// pass the request forward
 		next.ServeHTTP(w, r.WithContext(ctx))

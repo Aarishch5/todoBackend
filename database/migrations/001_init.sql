@@ -15,7 +15,14 @@ CREATE TABLE IF NOT EXISTS todo (
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_user
-    FOREIGN KEY (user_id)
-    REFERENCES users(user_id)
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
     ON DELETE CASCADE
+    );
+
+
+CREATE TABLE IF NOT EXISTS user_session (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(user_id) NOT NULL,
+    session_token TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );
