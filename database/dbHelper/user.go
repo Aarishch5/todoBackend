@@ -5,19 +5,16 @@ import (
 	"ToDo/models"
 
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 )
 
-func CreateUser(user *models.User) error {
-
+func CreateUserTx(tx *sqlx.Tx, user *models.User) error {
 	query := `
 	INSERT INTO users(name,email,password)
 	VALUES($1,$2,$3)
 	RETURNING user_id
 	`
-
-	return migrations.DB.QueryRow(
-		query, user.Name, user.Email, user.Password,
-	).Scan(&user.UserID)
+	return tx.QueryRow(query, user.Name, user.Email, user.Password).Scan(&user.UserID)
 }
 
 func DeleteUser(userID uuid.UUID) (int64, error) {

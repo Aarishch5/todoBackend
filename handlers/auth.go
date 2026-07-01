@@ -2,12 +2,15 @@ package handlers
 
 import (
 	"ToDo/database/dbHelper"
+	"ToDo/database/migrations"
 	"ToDo/models"
 	"ToDo/utils"
 	"encoding/json"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 func Register(w http.ResponseWriter, r *http.Request) {
@@ -50,31 +53,36 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		Password: hash,
 	}
 
-	if err := dbHelper.CreateUser(&user); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	var session models.Session
 
-	// creating a new session row in db
-	sessionToken, err := utils.GenerateSessionToken()
+	// user and session created together
+	// so that they can be wrap up together
+	err = migrations.Tx(func(tx *sqlx.Tx) error {
+		if err := dbHelper.CreateUserTx(tx, &user); err != nil {
+			return err
+		}
+
+		sessionToken, err := utils.GenerateSessionToken()
+		if err != nil {
+			return err
+		}
+
+		session = models.Session{
+			UserID:       user.UserID,
+			SessionToken: sessionToken,
+			ExpiresAt:    time.Now().Add(24 * time.Hour),
+		}
+
+		return dbHelper.CreateSessionTx(tx, &session)
+	})
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	session := models.Session{
-		UserID:       user.UserID,
-		SessionToken: sessionToken,
-		ExpiresAt:    time.Now().Add(24 * time.Hour),
-	}
-
-	if err := dbHelper.CreateSession(&session); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	//passing the sessionToken into the jwt
-	token, err := utils.GenerateJWTToken(user.UserID, sessionToken)
+	token, err := utils.GenerateJWTToken(user.UserID, session.SessionToken)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -103,16 +111,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := utils.CheckPassword(
-		user.Password,
-		req.Password,
-	); err != nil {
-
+	if err := utils.CheckPassword(user.Password, req.Password); err != nil {
 		http.Error(w, "invalid credentials", http.StatusUnauthorized)
 		return
 	}
 
-	// creating a session row
+	//Generate the sessionToken
 	sessionToken, err := utils.GenerateSessionToken()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -128,7 +132,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// passing sessionToken into the JWT
+	// generate the JWT
 	token, err := utils.GenerateJWTToken(user.UserID, sessionToken)
 
 	if err != nil {

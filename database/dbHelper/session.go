@@ -5,6 +5,7 @@ import (
 	"ToDo/models"
 
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 )
 
 func CreateSession(session *models.Session) error {
@@ -42,4 +43,14 @@ func DeleteSession(token string, userID uuid.UUID) (int64, error) {
 		return 0, err
 	}
 	return result.RowsAffected()
+}
+
+func CreateSessionTx(tx *sqlx.Tx, session *models.Session) error {
+	query := `
+	INSERT INTO user_session(user_id, session_token, expires_at)
+	VALUES($1,$2,$3)
+	RETURNING id, created_at
+	`
+	return tx.QueryRow(query, session.UserID, session.SessionToken, session.ExpiresAt).
+		Scan(&session.ID, &session.CreatedAt)
 }
