@@ -81,17 +81,9 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//passing the sessionToken into the jwt
-	token, err := utils.GenerateJWTToken(user.UserID, session.SessionToken)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	json.NewEncoder(w).Encode(map[string]any{
 		"user":  user,
-		"token": token,
+		"token": session.SessionToken,
 	})
 }
 
@@ -126,21 +118,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	session := models.Session{
 		UserID:       user.UserID,
 		SessionToken: sessionToken,
+		ExpiresAt:    time.Now().Add(24 * time.Hour),
 	}
 	if err := dbHelper.CreateSession(&session); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// generate the JWT
-	token, err := utils.GenerateJWTToken(user.UserID, sessionToken)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	json.NewEncoder(w).Encode(map[string]string{
-		"token": token,
+		"token": sessionToken,
 	})
 }

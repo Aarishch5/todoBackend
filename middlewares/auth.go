@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"ToDo/utils"
-
 	"github.com/google/uuid"
 )
 
@@ -45,34 +43,20 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		claims, err := utils.ValidateJWT(tokenString)
+		//tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		//claims, err := utils.ValidateJWT(tokenString)
 
+		sessionToken := strings.TrimPrefix(authHeader, "Bearer ")
+
+		// session token IS the credential now — look it up directly
+		session, err := dbHelper.GetSessionByToken(sessionToken)
 		if err != nil {
-			http.Error(w, "invalid token", http.StatusUnauthorized)
+			http.Error(w, "session revoked or expired", http.StatusUnauthorized)
 			return
 		}
 
-		userID, err := uuid.Parse(claims.UserID)
-		if err != nil {
-			http.Error(w, "invalid user id", http.StatusUnauthorized)
-			return
-		}
-
-		// to confirm that the session still exists in the DB
-		session, err := dbHelper.GetSessionByToken(claims.SessionToken)
-		if err != nil {
-			http.Error(w, "session revoked", http.StatusUnauthorized)
-			return
-		}
-
-		if session.UserID != userID {
-			http.Error(w, "session mismatch", http.StatusUnauthorized)
-			return
-		}
-
-		ctx := context.WithValue(r.Context(), UserContextKey, userID)
-		ctx = context.WithValue(ctx, SessionContextKey, claims.SessionToken)
+		ctx := context.WithValue(r.Context(), UserContextKey, session.UserID)
+		ctx = context.WithValue(ctx, SessionContextKey, sessionToken)
 
 		// pass the request forward
 		next.ServeHTTP(w, r.WithContext(ctx))
