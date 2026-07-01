@@ -37,8 +37,7 @@ func GetAllTodos(userID uuid.UUID) ([]models.Todo, error) {
 	err := migrations.DB.Select(
 		&todos,
 		`SELECT id, user_id, t_name, description FROM todo WHERE user_id=$1 AND archived_at IS NULL ORDER BY id`,
-		userID,
-	)
+		userID)
 
 	return todos, err
 }
