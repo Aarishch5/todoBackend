@@ -43,9 +43,6 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		//tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		//claims, err := utils.ValidateJWT(tokenString)
-
 		sessionToken := strings.TrimPrefix(authHeader, "Bearer ")
 
 		// session token IS the credential now — look it up directly

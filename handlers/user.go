@@ -20,10 +20,28 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	rows, err = dbHelper.DeleteAllToDos(userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if rows == 0 {
+		http.Error(w, "user not found", http.StatusNotFound)
+		return
+	}
+
+	rows, err = dbHelper.DeleteSessionById(userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	if rows == 0 {
 		http.Error(w, "user not found", http.StatusNotFound)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+
 }

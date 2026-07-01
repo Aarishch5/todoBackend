@@ -26,6 +26,7 @@ func CreateTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//validating the todo title
 	if todo.Name == "" {
 		http.Error(w, "t_name is required", http.StatusBadRequest)
 		return

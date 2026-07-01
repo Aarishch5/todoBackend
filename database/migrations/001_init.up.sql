@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS user_session (
     session_token TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL
+
 );
 
 

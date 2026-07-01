@@ -27,7 +27,7 @@ func GetSessionByToken(token string) (models.Session, error) {
 		&session,
 		`SELECT id, user_id, session_token, created_at, expires_at
 		 FROM user_session
-		 WHERE session_token=$1 AND expires_at > now()`,
+		 WHERE session_token=$1 AND expires_at > now() AND archived_at IS NULL`,
 		token,
 	)
 
@@ -36,7 +36,7 @@ func GetSessionByToken(token string) (models.Session, error) {
 
 func DeleteSession(token string, userID uuid.UUID) (int64, error) {
 	result, err := migrations.DB.Exec(
-		`DELETE FROM user_session WHERE session_token=$1 AND user_id=$2`,
+		`UPDATE user_session SET archived_at=now() WHERE session_token=$1 AND user_id=$2`,
 		token, userID,
 	)
 	if err != nil {
@@ -53,4 +53,13 @@ func CreateSessionTx(tx *sqlx.Tx, session *models.Session) error {
 	`
 	return tx.QueryRow(query, session.UserID, session.SessionToken, session.ExpiresAt).
 		Scan(&session.ID, &session.CreatedAt)
+}
+
+func DeleteSessionById(userID uuid.UUID) (int64, error) {
+	result, err := migrations.DB.Exec(
+		`UPDATE user_session SET archived_at=now() WHERE user_id=$1`, userID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }

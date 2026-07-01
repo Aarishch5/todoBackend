@@ -20,7 +20,7 @@ func CreateUserTx(tx *sqlx.Tx, user *models.User) error {
 func DeleteUser(userID uuid.UUID) (int64, error) {
 
 	result, err := migrations.DB.Exec(
-		`DELETE FROM users WHERE user_id=$1`, userID,
+		`UPDATE users SET archived_at=now() WHERE user_id=$1`, userID,
 	)
 
 	if err != nil {
@@ -35,7 +35,7 @@ func GetUserByEmail(email string) (models.User, error) {
 	var user models.User
 
 	err := migrations.DB.Get(&user, `
-		SELECT user_id,name,email,password FROM users WHERE email=$1`,
+		SELECT user_id,name,email,password FROM users WHERE email=$1 AND archived_at is NULL`,
 		email,
 	)
 

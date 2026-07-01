@@ -24,7 +24,7 @@ func GetTodoById(id uuid.UUID, userID uuid.UUID) (models.Todo, error) {
 
 	err := migrations.DB.Get(
 		&todo,
-		`SELECT id, user_id, t_name, description FROM todo WHERE id=$1 AND user_id=$2`,
+		`SELECT id, user_id, t_name, description FROM todo WHERE id=$1 AND user_id=$2 AND archived_at is NULL`,
 		id, userID,
 	)
 
@@ -36,7 +36,7 @@ func GetAllTodos(userID uuid.UUID) ([]models.Todo, error) {
 
 	err := migrations.DB.Select(
 		&todos,
-		`SELECT id, user_id, t_name, description FROM todo WHERE user_id=$1 ORDER BY id`,
+		`SELECT id, user_id, t_name, description FROM todo WHERE user_id=$1 AND archived_at IS NULL ORDER BY id`,
 		userID,
 	)
 
@@ -46,7 +46,7 @@ func GetAllTodos(userID uuid.UUID) ([]models.Todo, error) {
 func DeleteTodoById(id uuid.UUID, userID uuid.UUID) (int64, error) {
 
 	result, err := migrations.DB.Exec(
-		`DELETE FROM todo WHERE id=$1 AND user_id=$2`,
+		`UPDATE todo SET archived_at=now() WHERE id=$1 AND user_id=$2`,
 		id, userID,
 	)
 
@@ -68,5 +68,13 @@ func UpdateTodoById(id uuid.UUID, userID uuid.UUID, todo *models.Todo) (int64, e
 		return 0, err
 	}
 
+	return result.RowsAffected()
+}
+
+func DeleteAllToDos(userID uuid.UUID) (int64, error) {
+	result, err := migrations.DB.Exec(`UPDATE todo SET archived_at=now() WHERE user_id=$1`, userID)
+	if err != nil {
+		return 0, err
+	}
 	return result.RowsAffected()
 }
