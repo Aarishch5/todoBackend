@@ -129,3 +129,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		"token": sessionToken,
 	})
 }
+
+func Home(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(`{"status":"server is running"}`))
+}
