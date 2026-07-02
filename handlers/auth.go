@@ -18,7 +18,8 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	var req models.RegisterRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+
+		utils.RespondError(w, http.StatusBadRequest, err, err.Error())
 		return
 	}
 
@@ -30,13 +31,14 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	// validating the email
 	if err := utils.ValidateEmail(req.Email); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		//http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.RespondError(w, http.StatusBadRequest, err, err.Error())
 		return
 	}
 
 	// validating password
 	if err := utils.ValidatePassword(req.Password); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.RespondError(w, http.StatusBadRequest, err, err.Error())
 		return
 	}
 
@@ -44,6 +46,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.RespondError(w, http.StatusInternalServerError, err, err.Error())
 		return
 	}
 
@@ -78,6 +81,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.RespondError(w, http.StatusInternalServerError, err, err.Error())
 		return
 	}
 
@@ -93,25 +97,26 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.RespondError(w, http.StatusBadRequest, err, err.Error())
 		return
 	}
 
 	user, err := dbHelper.GetUserByEmail(req.Email)
 
 	if err != nil {
-		http.Error(w, "invalid credentials", http.StatusUnauthorized)
+		utils.RespondError(w, http.StatusUnauthorized, err, "invalid credentials")
 		return
 	}
 
 	if err := utils.CheckPassword(user.Password, req.Password); err != nil {
-		http.Error(w, "invalid credentials", http.StatusUnauthorized)
+		utils.RespondError(w, http.StatusUnauthorized, err, "invalid credentials")
 		return
 	}
 
 	//Generate the sessionToken
 	sessionToken, err := utils.GenerateSessionToken()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.RespondError(w, http.StatusInternalServerError, err, err.Error())
 		return
 	}
 
@@ -121,7 +126,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		ExpiresAt:    time.Now().Add(24 * time.Hour),
 	}
 	if err := dbHelper.CreateSession(&session); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.RespondError(w, http.StatusInternalServerError, err, "failed to create session")
 		return
 	}
 

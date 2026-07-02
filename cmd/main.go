@@ -2,6 +2,7 @@ package main
 
 import (
 	"ToDo/database/migrations"
+	"ToDo/logger"
 	"ToDo/server"
 	"context"
 	"fmt"
@@ -16,12 +17,12 @@ import (
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		log.Println(".env file not found")
+		logger.Log.Warn(".env file not found")
 	}
 
 	err := migrations.OpenConnection()
 	if err != nil {
-		log.Fatal(err)
+		logger.Log.WithError(err).Fatal("failed to connect to database")
 	}
 	defer migrations.DB.Close()
 
@@ -34,12 +35,12 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Shutting down the server")
+	logger.Log.Info("Shutting down the server")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	if err := myServer.Shutdown(ctx); err != nil {
-		log.Fatalf("forcefully shutdown: %v", err)
+		logger.Log.WithError(err).Fatal("forceful shutdown")
 	}
 
 	log.Println("Server exited")
