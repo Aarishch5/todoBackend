@@ -14,12 +14,6 @@ func EncodeBody(w http.ResponseWriter, statusCode int, v any) error {
 	return json.NewEncoder(w).Encode(v)
 }
 
-func RespondSuccess(w http.ResponseWriter, statusCode int, data any) {
-	if err := EncodeBody(w, statusCode, data); err != nil {
-		logger.Log.WithError(err).Error("failed to encode success response")
-	}
-}
-
 func RespondError(w http.ResponseWriter, statusCode int, err error, message string) {
 	if err != nil {
 		logger.Log.WithError(err).WithField("status_code", statusCode).Error(message)

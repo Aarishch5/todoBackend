@@ -4,6 +4,7 @@ import (
 	"ToDo/database/dbHelper"
 	middleware "ToDo/middlewares"
 	"ToDo/models"
+	"ToDo/utils"
 	"encoding/json"
 	"net/http"
 
@@ -97,13 +98,13 @@ func DeleteTodoById(w http.ResponseWriter, r *http.Request) {
 
 	id, err := uuid.Parse(chi.URLParam(r, "id"))
 	if err != nil {
-		http.Error(w, "invalid id", http.StatusBadRequest)
+		utils.RespondError(w, http.StatusBadRequest, err, "invalid id")
 		return
 	}
 
 	rows, err := dbHelper.DeleteTodoById(id, userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.RespondError(w, http.StatusInternalServerError, err, err.Error())
 		return
 	}
 
@@ -143,7 +144,7 @@ func UpdateTodoById(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := dbHelper.UpdateTodoById(id, userID, &todo)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.RespondError(w, http.StatusInternalServerError, err, err.Error())
 		return
 	}
 

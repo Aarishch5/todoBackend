@@ -3,6 +3,7 @@ package handlers
 import (
 	"ToDo/database/dbHelper"
 	middleware "ToDo/middlewares"
+	"ToDo/utils"
 	"net/http"
 )
 
@@ -16,13 +17,13 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := dbHelper.DeleteUser(userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.RespondError(w, http.StatusInternalServerError, err, err.Error())
 		return
 	}
 
 	rows, err = dbHelper.DeleteAllToDos(userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.RespondError(w, http.StatusInternalServerError, err, err.Error())
 		return
 	}
 
@@ -33,7 +34,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	rows, err = dbHelper.DeleteSessionById(userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.RespondError(w, http.StatusInternalServerError, err, err.Error())
 		return
 	}
 
